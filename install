@@ -1,6 +1,8 @@
 #!/bin/bash
 
-VERSION=0.1.8
+VERSION=0.1.0
+
+echo "----- Library(hgauss==$VERSION) installation."
 
 function silent_run
 {
@@ -20,9 +22,9 @@ function do_then_sudo
     fi
 }
 
-FILE=hcephes-$VERSION.tar.gz
-DIR=hcephes-$VERSION
-URL=https://github.com/limix/hcephes/archive/$VERSION.tar.gz
+FILE=hgauss-$VERSION.tar.gz
+DIR=hgauss-$VERSION
+URL=https://github.com/limix/hgauss/archive/$VERSION.tar.gz
 
 silent_trun rm $FILE
 silent_trun rm -rf $DIR
@@ -51,8 +53,8 @@ silent_run do_then_sudo make install
 [ $? == 0 ] && echo "done." || { echo "FAILED."; exit 1; }
 
 cd .. && cd ..
-silent_trun rm hcephes-$VERSION.tar.gz
-silent_trun rm -rf hcephes-$VERSION
+silent_trun rm hgauss-$VERSION.tar.gz
+silent_trun rm -rf hgauss-$VERSION
 
 if type "ldconfig" >/dev/null 2>&1; then
     silent_run do_then_sudo ldconfig
