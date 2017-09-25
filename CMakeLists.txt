@@ -16,6 +16,7 @@ endif ()
 set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -24,6 +25,14 @@ endif()
 
 file(STRINGS "VERSION" HGAUSS_VERSION)
 
+find_package( HCEPHES REQUIRED )
+if(NOT HCEPHES_FOUND)
+    message(STATUS "Could not find hcephes library. If you have it installed,
+                    please, define HCEPHES_LIBRARYDIR and HCEPHES_INCLUDEDIR
+                    appropriately to fix it.")
+endif()
+
+include_directories( ${HCEPHES_INCLUDE_DIRS} )
 include_directories( include/ )
 add_subdirectory(hgauss)
 
@@ -41,11 +50,13 @@ install(TARGETS hgauss
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION lib
     PUBLIC_HEADER DESTINATION include/hgauss)
+target_link_libraries( hgauss ${HCEPHES_LIBRARIES} )
 
 install(TARGETS hgauss_static
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
     PUBLIC_HEADER DESTINATION include/hgauss)
+target_link_libraries( hgauss_static ${HCEPHES_LIBRARIES} )
 
 add_subdirectory(test)
 

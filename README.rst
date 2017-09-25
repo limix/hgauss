@@ -4,7 +4,7 @@ hgauss
 
 |Build-Status| |Win-Build-Status| |Codacy-Grade|
 
-Cephes library.
+Auxiliary functions for Normal distribution.
 
 Install
 -------
@@ -36,6 +36,20 @@ Assuming you are at folder ``C:\projects\hgauss`` you might want to try
     nmake
     nmake test
     nmake install
+
+Documentation
+-------------
+
+.. code:: C
+
+    double hgauss_logcdf(double x);
+    double hgauss_pdf(double x);
+    double hgauss_cdf(double x);
+    double hgauss_icdf(double x);
+    double hgauss_logsf(double x);
+    double hgauss_sf(double x);
+    double hgauss_isf(double x);
+    double hgauss_logpdf(double x);
 
 Authors
 -------

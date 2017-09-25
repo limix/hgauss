@@ -1,10 +1,10 @@
-#include "numpy_sugar/special.h"
+#include "hcephes/hcephes.h"
 
 #include <float.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "hcephes/hcephes.h"
+#include "hgauss/hgauss.h"
 
 /*
  * double logcdf(double a)
