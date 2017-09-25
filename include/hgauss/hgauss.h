@@ -6,9 +6,8 @@
 double hgauss_logcdf(double x);
 
 static inline double hgauss_logpdf(double x) {
-  static const double _norm_pdf_logC =
-      0.9189385332046726695409688545623794198036193847656250;
-  return -(x * x) / 2.0 - _norm_pdf_logC;
+  static const double logC = 0.91893853320467266954096885456237941980361938476;
+  return -(x * x) / 2.0 - logC;
 }
 
 static inline double hgauss_pdf(double x) { return exp(hgauss_logpdf(x)); }
