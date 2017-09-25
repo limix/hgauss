@@ -2,16 +2,20 @@
 
 VERSION=0.1.0
 
-echo "----- Library(hgauss==$VERSION) installation."
+echo "[_/_] Library(hgauss==$VERSION)"
+
+rm /tmp/hgauss.log >/dev/null 2>&1 || true
+logfile=$(mktemp /tmp/hgauss.log)
+exec 3>"$logfile"
 
 function silent_run
 {
-    eval "$@ >/dev/null 2>&1"
+    eval "$@ >&3 2>&1"
 }
 
 function silent_trun
 {
-    eval "$@ >/dev/null 2>&1 || true"
+    eval "$@ >&3 2>&1 || true"
 }
 
 function do_then_sudo
@@ -22,6 +26,14 @@ function do_then_sudo
     fi
 }
 
+function failed
+{
+    echo "FAILED."
+    echo "[_/_] LOG OUTPUT:"
+    cat $logfile
+    exit 1
+}
+
 FILE=hgauss-$VERSION.tar.gz
 DIR=hgauss-$VERSION
 URL=https://github.com/limix/hgauss/archive/$VERSION.tar.gz
@@ -29,33 +41,38 @@ URL=https://github.com/limix/hgauss/archive/$VERSION.tar.gz
 silent_trun rm $FILE
 silent_trun rm -rf $DIR
 
-echo -n "[1/5] Downloading... "
+echo -n "[1/6] Downloading... "
 silent_run curl -o $FILE -L $URL
-[ $? == 0 ] && echo "done." || { echo "FAILED."; exit 1; }
+[ $? == 0 ] && echo "done." || failed
 
-tar xzf $FILE && cd $DIR
-mkdir build && cd build
+echo -n "[2/6] Extracting... "
+silent_run tar xzf $FILE
+[ $? == 0 ] && echo "done." || failed
 
-echo -n "[2/5] Configuring... "
+cd $DIR && mkdir build && cd build
+
+echo -n "[3/6] Configuring... "
 silent_run cmake ..
-[ $? == 0 ] && echo "done." || { echo "FAILED."; exit 1; }
+[ $? == 0 ] && echo "done." || failed
 
-echo -n "[3/5] Compiling... "
+echo -n "[4/6] Compiling... "
 silent_run make
-[ $? == 0 ] && echo "done." || { echo "FAILED."; exit 1; }
+[ $? == 0 ] && echo "done." || failed
 
-echo -n "[4/5] Testing... "
+echo -n "[5/6] Testing... "
 silent_run make test
-[ $? == 0 ] && echo "done." || { echo "FAILED."; exit 1; }
+[ $? == 0 ] && echo "done." || failed
 
-echo -n "[5/5] Installing... "
+echo -n "[6/6] Installing... "
 silent_run do_then_sudo make install
-[ $? == 0 ] && echo "done." || { echo "FAILED."; exit 1; }
+[ $? == 0 ] && echo "done." || failed
 
 cd .. && cd ..
 silent_trun rm hgauss-$VERSION.tar.gz
 silent_trun rm -rf hgauss-$VERSION
 
-if type "ldconfig" >/dev/null 2>&1; then
+if type "ldconfig" >&3 2>&1; then
     silent_run do_then_sudo ldconfig
 fi
+
+rm "$logfile" || true
