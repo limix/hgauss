@@ -9,13 +9,18 @@
 #   HCEPHES_LIBRARYDIR      - Preferred library directory e.g. <prefix>/lib
 
 set(_hcephes_INCLUDE_SEARCH_DIRS "/usr/include" "/usr/local/include")
+
 if(HCEPHES_INCLUDEDIR)
     list(APPEND _hcephes_INCLUDE_SEARCH_DIRS ${HCEPHES_INCLUDEDIR})
 endif()
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    list(APPEND _hcephes_INCLUDE_SEARCH_DIRS "$ENV{PROGRAMFILES}/hcephes/include")
+endif()
+
 find_path(
     HCEPHES_INCLUDE_DIR
-    NAMES hcephes/hcephes.h
+    NAMES hcephes.h
     HINTS ${_hcephes_INCLUDE_SEARCH_DIRS}
 )
 

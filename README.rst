@@ -63,8 +63,8 @@ This project is licensed under the MIT License - see the `license file`_ for
 details.
 
 
-.. |Build-Status| image:: https://travis-ci.org/limix/hgauss.svg?branch=master
-    :target: https://travis-ci.org/limix/hgauss
+.. |Build-Status| image:: https://img.shields.io/travis/com/limix/hgauss/master.svg?style=flat-square
+    :target: https://travis-ci.com/limix/hgauss
 
 .. |Win-Build-Status| image:: https://ci.appveyor.com/api/projects/status/enlpm6cfltjy7h3m/branch/master?svg=true
     :target: https://ci.appveyor.com/project/Horta/hgauss/branch/master

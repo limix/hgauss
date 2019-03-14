@@ -1,7 +1,7 @@
 #ifndef HGAUSS_H
 #define HGAUSS_H
 
-#include "hcephes/hcephes.h"
+#include "hcephes.h"
 
 double hgauss_logcdf(double x);
 
