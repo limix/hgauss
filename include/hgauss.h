@@ -11,13 +11,13 @@
 #define HGAUSS_API
 #endif
 
-/** Major liknorm version. */
+/** Major hgauss version. */
 #define HGAUSS_VERSION_MAJOR 0
-/** Minor liknorm version. */
+/** Minor hgauss version. */
 #define HGAUSS_VERSION_MINOR 1
-/** Minor liknorm version. */
+/** Minor hgauss version. */
 #define HGAUSS_VERSION_PATCH 0
-/** Liknorm version. */
+/** hgauss version. */
 #define HGAUSS_VERSION "0.1.0"
 
 #ifdef __cplusplus
