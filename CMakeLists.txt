@@ -1,64 +1,64 @@
-cmake_minimum_required (VERSION 2.6.4)
+cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
+project(hgauss LANGUAGES C VERSION 0.1.0)
+set(PROJECT_DESCRIPTION "Implements the logarithm of the sum of exponentiations.")
 
-project(hgauss C)
+# Generate compile_commands.json file
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-                  OUTPUT_VARIABLE GCC_VERSION)
-
-  if (GCC_VERSION VERSION_GREATER 4.9)
-    set (CMAKE_C_STANDARD 11)
-  else ()
-    set (CMAKE_C_FLAGS "--std=gnu99 ${CMAKE_C_FLAGS}")
-  endif ()
-endif ()
-
-set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-  add_definitions(-Dinline=__inline)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# Set RPATH only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
-file(STRINGS "VERSION" HGAUSS_VERSION)
+add_library(hgauss src/hgauss.c)
+add_library(HGAUSS::hgauss ALIAS hgauss)
 
-find_package( HCEPHES REQUIRED )
-if(NOT HCEPHES_FOUND)
-    message(STATUS "Could not find hcephes library. If you have it installed,
-                    please, define HCEPHES_LIBRARYDIR and HCEPHES_INCLUDEDIR
-                    appropriately to fix it.")
-endif()
+find_package(hcephes REQUIRED)
 
-include_directories( ${HCEPHES_INCLUDE_DIRS} )
-include_directories( include/ )
-add_subdirectory(hgauss)
+target_include_directories(hgauss
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_link_libraries(hgauss PRIVATE HCEPHES::hcephes)
+set_target_properties(hgauss PROPERTIES PUBLIC_HEADER include/hgauss.h)
+set_target_properties(hgauss PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(hgauss PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(hgauss PROPERTIES C_STANDARD 99)
+set_target_properties(hgauss PROPERTIES DEFINE_SYMBOL HGAUSS_EXPORTS)
+target_compile_definitions(hgauss PRIVATE $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS>)
+target_compile_definitions(hgauss PRIVATE $<$<BOOL:${WIN32}>:_CRT_NONSTDC_NO_DEPRECATE>)
+target_link_libraries(hgauss INTERFACE $<$<BOOL:${UNIX}>:m>)
+target_compile_options(hgauss PRIVATE
+    $<$<STREQUAL:${CMAKE_C_COMPILER_ID},MSVC>:/W3 /WX>
+    $<$<NOT:$<STREQUAL:${CMAKE_C_COMPILER_ID},MSVC>>:-Wall -Wextra -Wstrict-prototypes
+        -Wshadow -Wconversion -Wmissing-prototypes -Wno-unused-parameter>
+)
 
-add_library(hgauss SHARED hgauss/hgauss.c)
-
-add_library(hgauss_static STATIC hgauss/hgauss.c)
-
-set_target_properties(hgauss
-  PROPERTIES
-    VERSION ${HGAUSS_VERSION}
-PUBLIC_HEADER include/hgauss/hgauss.h)
-
-install(TARGETS hgauss
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/hgauss)
-target_link_libraries( hgauss ${HCEPHES_LIBRARIES} )
-
-install(TARGETS hgauss_static
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/hgauss)
-target_link_libraries( hgauss_static ${HCEPHES_LIBRARIES} )
-
-add_subdirectory(test)
+install(TARGETS hgauss EXPORT hgauss-targets
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    PUBLIC_HEADER DESTINATION include
+)
+install(EXPORT hgauss-targets
+    FILE hgauss-targets.cmake
+    NAMESPACE HGAUSS::
+    DESTINATION lib/cmake/hgauss
+)
+include(CMakePackageConfigHelpers)
+configure_package_config_file(hgauss-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/hgauss-config.cmake
+    INSTALL_DESTINATION lib/cmake/hgauss
+    NO_SET_AND_CHECK_MACRO
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hgauss-config.cmake
+    DESTINATION lib/cmake/hgauss
+)
 
 enable_testing()
-add_test(test_hgauss test/test_hgauss)
+add_subdirectory(test)
