@@ -4,8 +4,10 @@ jobs:
     - name: Build on linux-default
       os: linux
       env: CMAKE_GENERATOR="Unix Makefiles"
-      before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo bash
       sudo: required
+      before_script:
+        - test -e /usr/bin/cmake || sudo ln -s $(which cmake) /usr/bin/cmake
+        - curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo bash
     - name: Build on osx-default
       os: osx
       env: CMAKE_GENERATOR="Unix Makefiles"
