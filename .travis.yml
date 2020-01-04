@@ -1,58 +1,61 @@
 language: c
 jobs:
   include:
-    - name: Build on linux-default
-      os: linux
-      env: CMAKE_GENERATOR="Unix Makefiles"
-      sudo: required
-      before_script:
-        - test -e /usr/bin/cmake || sudo ln -s $(which cmake) /usr/bin/cmake
-        - curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo bash
-    - name: Build on osx-default
-      os: osx
-      env: CMAKE_GENERATOR="Unix Makefiles"
-      before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo bash
-    - name: Build on windows-vs15
-      os: windows
-      env: CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
-      before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes bash
-    - name: Build on windows-ninja
-      os: windows
-      env: CMAKE_GENERATOR=Ninja
-      before_install: choco install ninja --no-progress -y
-      before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes bash
-    # - name: Install on linux-default
-    #   os: linux
-    #   sudo: required
-    #   before_script: test -e /usr/bin/cmake || sudo ln -s $(which cmake) /usr/bin/cmake
-    #   script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo bash
-    # - name: Install on osx-default
-    #   os: osx
-    #   script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo bash
-    # - name: Install on windows
-    #   os: windows
-    #   script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes bash
+  - name: Build on linux-default
+    os: linux
+    env: CMAKE_GENERATOR="Unix Makefiles"
+    sudo: required
+    before_script:
+    - test -e /usr/bin/cmake || sudo ln -s $(which cmake) /usr/bin/cmake
+    - curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes DO_CMD=sudo
+      bash
+  - name: Build on osx-default
+    os: osx
+    env: CMAKE_GENERATOR="Unix Makefiles"
+    before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes
+      DO_CMD=sudo bash
+  - name: Build on windows-vs15
+    os: windows
+    env: CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
+    before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes
+      bash
+  - name: Build on windows-ninja
+    os: windows
+    env: CMAKE_GENERATOR=Ninja
+    before_install: choco install ninja --no-progress -y
+    before_script: curl -fsSL https://git.io/JerYI | GITHUB_USER=limix GITHUB_PROJECT=hcephes
+      bash
 script:
-  - mkdir prefix
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/prefix ..
-  - cmake --build . --config Release
-  - ctest --output-on-failure -C Release
-  - cmake --build . --config Release --target install
-  - test -e $TRAVIS_BUILD_DIR/prefix/include/hgauss.h
-  - test -e $TRAVIS_BUILD_DIR/prefix/lib/cmake/hgauss/hgauss-config.cmake
-  - test -e $TRAVIS_BUILD_DIR/prefix/lib/cmake/hgauss/hgauss-targets-release.cmake
-  - test -e $TRAVIS_BUILD_DIR/prefix/lib/cmake/hgauss/hgauss-targets.cmake
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then otool -l $TRAVIS_BUILD_DIR/prefix/lib/libhgauss.dylib
-    | grep -q LC_RPATH; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then test -e $TRAVIS_BUILD_DIR/prefix/lib/libhgauss.so;
-    fi
-  - cd $TRAVIS_BUILD_DIR
-  - git clean -xdf
+- mkdir prefix
+- mkdir build
+- cd build
+- cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/prefix
+  ..
+- cmake --build . --config Release
+- ctest --output-on-failure -C Release
+- cmake --build . --config Release --target install
+- test -e $TRAVIS_BUILD_DIR/prefix/include/hgauss.h
+- test -e $TRAVIS_BUILD_DIR/prefix/lib/cmake/hgauss/hgauss-config.cmake
+- test -e $TRAVIS_BUILD_DIR/prefix/lib/cmake/hgauss/hgauss-targets-release.cmake
+- test -e $TRAVIS_BUILD_DIR/prefix/lib/cmake/hgauss/hgauss-targets.cmake
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then otool -l $TRAVIS_BUILD_DIR/prefix/lib/libhgauss.dylib
+  | grep -q LC_RPATH; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then test -e $TRAVIS_BUILD_DIR/prefix/lib/libhgauss.so;
+  fi
+- cd $TRAVIS_BUILD_DIR
+- git clean -xdf
 notifications:
   email:
     recipients:
-      - danilo.horta@pm.me
+    - danilo.horta@pm.me
     on_success: never
     on_failure: always
+deploy:
+  provider: releases
+  api_key:
+    secure: m4kmOxH1cd3vRetBuQsyXv/vI7aQmd0+jHkPKr2xPOOa4qYaN5HnmSdY+ojUKumDezj2uH7zAMtyOYJNs22kfMsz0eldATi9sSz0tLfrakvp5v7Evcm5+2BITjrWDgYco5DCWJcXLS7OY1xv8TUgccX4m1VVUr64ch8drCiKwyFN0TKSYK7ECy46b2772qdsx0AVfDDHSoclzYWbrAzxeTv1Af33VUiVcdWXwn2fw6T4FIHbH8x/ATQYVr75fXofMUQWhCvVUz0V4BWSSgI3HHZ2O3q9huOSmZnQqIR1fE4fkP0JtRTdAA2gdIHszL8uROqrCANx9+RMHPA2fjjL6lbrrE+x7rPaMkQur1Mp/boI/vtURN75JWeXB6x4aVEe/DPFkA8tkw1/nJiGXnvOLEpFHNXuG/Mfi86N+aWuEn0eUGz+iFufOp+O/pBzCFFfGfIkgoxGne0VZkoJ35b4PJQzRyEDsKwtyjIX4N/Kd6KDXwLFGTnLhlWbPrhqHi2NDHah/gcYfNPkYTJtHPCDPxi26MJQMmvPqwcd0Y+yp3cYatuXls7QQOYAL/mEP7WC3t7E97hkP6DdT6TPA2p+MCHPo9jk/2wmv1ehAT2Ki1zB0Rwp9U4rg3ZQ+TPlCK7X3d22U5vM1x4SIVrIGy2ig84BvhDmSmL8yG11PGXuuSA=
+  on:
+    tags: true
+    repo: limix/hgauss
+    branch: master
+    skip_existing: true
